@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bảng điều khiển tồn kho phụ tùng</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #65738a;
+      --primary: #dc2626;
+      --primary-dark: #b91c1c;
+      --blue: #1d4ed8;
+      --green: #047857;
+      --amber: #b45309;
+      --border: #dbe3ef;
+      --shadow: 0 16px 40px rgba(15, 23, 42, 0.09);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background: linear-gradient(135deg, #fff5f5, var(--bg) 45%, #edf6ff);
+      font-family: Arial, "Segoe UI", sans-serif;
+    }
+
+    .container {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0;
+    }
+
+    .hero, .card {
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr minmax(260px, 360px);
+      gap: 20px;
+      align-items: center;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .badge-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      color: var(--primary-dark);
+      background: #fee2e2;
+      font-weight: 700;
+      font-size: 0.86rem;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      margin-bottom: 10px;
+      font-size: clamp(2rem, 5vw, 3.3rem);
+      line-height: 1.05;
+    }
+
+    .hero p, .muted { color: var(--muted); }
+
+    .search-panel {
+      padding: 18px;
+      border-radius: 20px;
+      background: #f8fafc;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    input, select, button {
+      width: 100%;
+      min-height: 44px;
+      border-radius: 13px;
+      font: inherit;
+    }
+
+    input, select {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12);
+    }
+
+    button {
+      border: 0;
+      color: #fff;
+      background: var(--primary);
+      cursor: pointer;
+      font-weight: 800;
+      transition: 0.2s ease;
+    }
+
+    button:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+    .secondary-button { background: var(--blue); }
+    .secondary-button:hover { background: #1e40af; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      padding: 20px;
+      border-left: 5px solid var(--primary);
+    }
+
+    .stat:nth-child(2) { border-color: var(--blue); }
+    .stat:nth-child(3) { border-color: var(--amber); }
+    .stat:nth-child(4) { border-color: var(--green); }
+
+    .stat span { color: var(--muted); font-size: 0.9rem; font-weight: 700; }
+    .stat strong { display: block; margin-top: 8px; font-size: 2rem; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 20px;
+    }
+
+    .card { padding: 22px; }
+
+    .card-header {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .status {
+      display: inline-flex;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 0.8rem;
+    }
+
+    .ok { color: var(--green); background: #dcfce7; }
+    .low { color: var(--amber); background: #fef3c7; }
+    .empty { color: var(--primary-dark); background: #fee2e2; }
+
+    .message {
+      min-height: 22px;
+      margin: 12px 0 0;
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .history {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .history li {
+      padding: 12px;
+      border-radius: 14px;
+      background: #f8fafc;
+      color: var(--muted);
+    }
+
+    .history strong {
+      display: block;
+      color: var(--text);
+    }
+
+    @media (max-width: 900px) {
+      .hero, .grid { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 560px) {
+      .container { width: min(100% - 20px, 1180px); padding: 16px 0; }
+      .hero, .card { padding: 16px; border-radius: 18px; }
+      .stats { grid-template-columns: 1fr; }
+      .card-header { align-items: stretch; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="hero">
+      <div>
+        <span class="badge-title">🇻🇳 Kho phụ tùng ô tô</span>
+        <h1>Bảng điều khiển tồn kho</h1>
+        <p>Quản lý nhập xuất, tìm mã phụ tùng và theo dõi hàng sắp hết trong một file HTML đơn giản.</p>
+      </div>
+      <div class="search-panel">
+        <label for="searchInput">Tìm kiếm mã phụ tùng / tên hàng</label>
+        <input id="searchInput" type="search" placeholder="Ví dụ: LOC-001, bugi, phanh...">
+      </div>
+    </section>
+
+    <section class="stats" aria-label="Tổng quan tồn kho">
+      <article class="card stat">
+        <span>Tổng mã hàng</span>
+        <strong id="totalParts">0</strong>
+      </article>
+      <article class="card stat">
+        <span>Tổng số lượng</span>
+        <strong id="totalQuantity">0</strong>
+      </article>
+      <article class="card stat">
+        <span>Sắp hết hàng</span>
+        <strong id="lowStockCount">0</strong>
+      </article>
+      <article class="card stat">
+        <span>Giá trị tồn kho</span>
+        <strong id="stockValue">0₫</strong>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <div class="card-header">
+          <div>
+            <h2>Danh sách phụ tùng</h2>
+            <p class="muted">Dữ liệu được lưu trên trình duyệt bằng localStorage.</p>
+          </div>
+          <button id="resetButton" class="secondary-button" type="button">Dữ liệu mẫu</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Mã</th>
+                <th>Tên phụ tùng</th>
+                <th>Danh mục</th>
+                <th>Vị trí</th>
+                <th>Tồn</th>
+                <th>Đơn giá</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryBody"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <aside class="card">
+        <h2>Nhập / Xuất kho</h2>
+        <form id="stockForm" class="form-grid">
+          <div>
+            <label for="type">Loại giao dịch</label>
+            <select id="type">
+              <option value="import">Nhập kho</option>
+              <option value="export">Xuất kho</option>
+            </select>
+          </div>
+          <div>
+            <label for="code">Mã phụ tùng</label>
+            <input id="code" list="partCodes" placeholder="LOC-001" required>
+            <datalist id="partCodes"></datalist>
+          </div>
+          <div>
+            <label for="name">Tên phụ tùng</label>
+            <input id="name" placeholder="Lọc dầu động cơ" required>
+          </div>
+          <div>
+            <label for="category">Danh mục</label>
+            <input id="category" placeholder="Lọc / Phanh / Điện" required>
+          </div>
+          <div>
+            <label for="location">Vị trí kệ</label>
+            <input id="location" placeholder="A1-03" required>
+          </div>
+          <div>
+            <label for="quantity">Số lượng</label>
+            <input id="quantity" type="number" min="1" value="1" required>
+          </div>
+          <div>
+            <label for="price">Đơn giá nhập</label>
+            <input id="price" type="number" min="0" step="1000" value="0" required>
+          </div>
+          <div>
+            <label for="minimum">Tồn tối thiểu</label>
+            <input id="minimum" type="number" min="0" value="5" required>
+          </div>
+          <button type="submit">Cập nhật tồn kho</button>
+        </form>
+        <p id="message" class="message"></p>
+
+        <h3>Lịch sử gần đây</h3>
+        <ul id="history" class="history"></ul>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "simple-vietnamese-inventory";
+    const money = new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" });
+    const number = new Intl.NumberFormat("vi-VN");
+
+    const sampleData = [
+      { code: "LOC-001", name: "Lọc dầu động cơ Toyota", category: "Lọc", location: "A1-03", quantity: 42, minimum: 10, price: 85000 },
+      { code: "BRK-220", name: "Má phanh trước Ford Ranger", category: "Phanh", location: "B2-11", quantity: 8, minimum: 12, price: 620000 },
+      { code: "SPK-778", name: "Bugi Iridium Honda", category: "Động cơ", location: "C1-02", quantity: 64, minimum: 20, price: 145000 },
+      { code: "BAT-550", name: "Ắc quy 12V 55Ah", category: "Điện", location: "D4-01", quantity: 5, minimum: 6, price: 1380000 }
+    ];
+
+    let inventory = loadInventory();
+    let history = [];
+
+    const elements = {
+      searchInput: document.querySelector("#searchInput"),
+      inventoryBody: document.querySelector("#inventoryBody"),
+      partCodes: document.querySelector("#partCodes"),
+      totalParts: document.querySelector("#totalParts"),
+      totalQuantity: document.querySelector("#totalQuantity"),
+      lowStockCount: document.querySelector("#lowStockCount"),
+      stockValue: document.querySelector("#stockValue"),
+      form: document.querySelector("#stockForm"),
+      type: document.querySelector("#type"),
+      code: document.querySelector("#code"),
+      name: document.querySelector("#name"),
+      category: document.querySelector("#category"),
+      location: document.querySelector("#location"),
+      quantity: document.querySelector("#quantity"),
+      price: document.querySelector("#price"),
+      minimum: document.querySelector("#minimum"),
+      message: document.querySelector("#message"),
+      history: document.querySelector("#history"),
+      resetButton: document.querySelector("#resetButton")
+    };
+
+    function loadInventory() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : sampleData.map((item) => ({ ...item }));
+    }
+
+    function saveInventory() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(inventory));
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[char]));
+    }
+
+    function getStatus(item) {
+      if (item.quantity <= 0) return { text: "Hết hàng", className: "empty" };
+      if (item.quantity <= item.minimum) return { text: "Sắp hết", className: "low" };
+      return { text: "Đủ hàng", className: "ok" };
+    }
+
+    function getFilteredInventory() {
+      const keyword = elements.searchInput.value.trim().toLowerCase();
+      if (!keyword) return inventory;
+      return inventory.filter((item) =>
+        [item.code, item.name, item.category, item.location].some((field) => String(field).toLowerCase().includes(keyword))
+      );
+    }
+
+    function renderTable() {
+      const rows = getFilteredInventory();
+      elements.inventoryBody.innerHTML = rows.map((item) => {
+        const status = getStatus(item);
+        return `
+          <tr>
+            <td><strong>${escapeHtml(item.code)}</strong></td>
+            <td>${escapeHtml(item.name)}</td>
+            <td>${escapeHtml(item.category)}</td>
+            <td>${escapeHtml(item.location)}</td>
+            <td>${number.format(item.quantity)}</td>
+            <td>${money.format(item.price)}</td>
+            <td><span class="status ${status.className}">${status.text}</span></td>
+          </tr>
+        `;
+      }).join("");
+
+      if (!rows.length) {
+        elements.inventoryBody.innerHTML = '<tr><td colspan="7">Không tìm thấy phụ tùng phù hợp.</td></tr>';
+      }
+
+      elements.partCodes.innerHTML = inventory.map((item) => `<option value="${escapeHtml(item.code)}">${escapeHtml(item.name)}</option>`).join("");
+    }
+
+    function renderStats() {
+      elements.totalParts.textContent = number.format(inventory.length);
+      elements.totalQuantity.textContent = number.format(inventory.reduce((sum, item) => sum + item.quantity, 0));
+      elements.lowStockCount.textContent = number.format(inventory.filter((item) => item.quantity <= item.minimum).length);
+      elements.stockValue.textContent = money.format(inventory.reduce((sum, item) => sum + item.quantity * item.price, 0));
+    }
+
+    function renderHistory() {
+      if (!history.length) {
+        elements.history.innerHTML = '<li>Chưa có giao dịch trong phiên này.</li>';
+        return;
+      }
+
+      elements.history.innerHTML = history.slice(0, 5).map((entry) => `
+        <li>
+          <strong>${entry.type === "import" ? "Nhập" : "Xuất"} ${number.format(entry.quantity)} - ${escapeHtml(entry.code)}</strong>
+          ${escapeHtml(entry.name)} • ${escapeHtml(entry.time)}
+        </li>
+      `).join("");
+    }
+
+    function render() {
+      renderTable();
+      renderStats();
+      renderHistory();
+    }
+
+    function fillFormFromCode() {
+      const code = elements.code.value.trim().toUpperCase();
+      const item = inventory.find((part) => part.code === code);
+      if (!item) return;
+      elements.name.value = item.name;
+      elements.category.value = item.category;
+      elements.location.value = item.location;
+      elements.price.value = item.price;
+      elements.minimum.value = item.minimum;
+    }
+
+    elements.form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const type = elements.type.value;
+      const code = elements.code.value.trim().toUpperCase();
+      const name = elements.name.value.trim();
+      const category = elements.category.value.trim();
+      const location = elements.location.value.trim().toUpperCase();
+      const quantity = Number(elements.quantity.value);
+      const price = Number(elements.price.value);
+      const minimum = Number(elements.minimum.value);
+      let item = inventory.find((part) => part.code === code);
+
+      if (type === "export" && (!item || item.quantity < quantity)) {
+        elements.message.textContent = "Không đủ hàng để xuất kho.";
+        elements.message.style.color = "var(--primary)";
+        return;
+      }
+
+      if (!item) {
+        item = { code, name, category, location, quantity: 0, minimum, price };
+        inventory.push(item);
+      }
+
+      item.name = name;
+      item.category = category;
+      item.location = location;
+      item.minimum = minimum;
+      item.price = price;
+      item.quantity += type === "import" ? quantity : -quantity;
+
+      history.unshift({ type, code, name, quantity, time: new Date().toLocaleString("vi-VN") });
+      saveInventory();
+      render();
+      elements.form.reset();
+      elements.quantity.value = 1;
+      elements.price.value = 0;
+      elements.minimum.value = 5;
+      elements.message.style.color = "var(--green)";
+      elements.message.textContent = type === "import" ? "Đã nhập kho thành công." : "Đã xuất kho thành công.";
+    });
+
+    elements.searchInput.addEventListener("input", renderTable);
+    elements.code.addEventListener("change", fillFormFromCode);
+    elements.resetButton.addEventListener("click", () => {
+      inventory = sampleData.map((item) => ({ ...item }));
+      history = [];
+      saveInventory();
+      render();
+      elements.message.style.color = "var(--green)";
+      elements.message.textContent = "Đã khôi phục dữ liệu mẫu.";
+    });
+
+    render();
+  </script>
+</body>
+</html>
