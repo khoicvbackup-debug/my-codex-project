@@ -20,3 +20,15 @@ python3 -m http.server 8000
 ```
 
 Sau đó truy cập `http://localhost:8000`.
+
+## Đưa code lên GitHub
+
+Nếu repository chưa có remote GitHub, tạo repository mới trên GitHub rồi chạy:
+
+```bash
+git remote add origin https://github.com/<ten-nguoi-dung>/<ten-repository>.git
+git branch -M main
+git push -u origin main
+```
+
+Sau khi push lên nhánh `main`, GitHub Actions trong `.github/workflows/pages.yml` sẽ tự động publish ứng dụng tĩnh lên GitHub Pages. Trong GitHub, vào **Settings → Pages** và chọn nguồn triển khai **GitHub Actions** nếu repository chưa bật Pages.
