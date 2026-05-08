@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kho Phụ Tùng Ô Tô Việt Nam</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section id="loginScreen" class="login-screen" aria-labelledby="loginTitle">
+        <div class="login-card">
+          <div class="brand-mark" aria-hidden="true">VN</div>
+          <p class="eyebrow">Quản lý kho phụ tùng</p>
+          <h1 id="loginTitle">Đăng nhập hệ thống</h1>
+          <p class="login-hint">Dùng tài khoản mẫu: <strong>admin</strong> / <strong>123456</strong></p>
+          <form id="loginForm" class="form-grid">
+            <label>
+              Tên đăng nhập
+              <input id="username" name="username" type="text" autocomplete="username" placeholder="admin" required />
+            </label>
+            <label>
+              Mật khẩu
+              <input id="password" name="password" type="password" autocomplete="current-password" placeholder="123456" required />
+            </label>
+            <p id="loginError" class="error-message" role="alert"></p>
+            <button class="primary-button" type="submit">Đăng nhập</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="dashboard" class="dashboard hidden" aria-label="Bảng điều khiển quản lý kho">
+        <aside class="sidebar">
+          <div>
+            <div class="brand-row">
+              <span class="brand-mark small">VN</span>
+              <div>
+                <strong>AutoParts Kho</strong>
+                <span>Warehouse Manager</span>
+              </div>
+            </div>
+            <nav class="nav-list" aria-label="Chức năng chính">
+              <a href="#inventorySection">Tồn kho</a>
+              <a href="#transactionSection">Nhập / Xuất</a>
+              <a href="#reportSection">Báo cáo</a>
+            </nav>
+          </div>
+          <button id="logoutButton" class="ghost-button" type="button">Đăng xuất</button>
+        </aside>
+
+        <div class="content">
+          <header class="topbar">
+            <div>
+              <p class="eyebrow">Xin chào, quản lý kho</p>
+              <h2>Kho phụ tùng ô tô</h2>
+            </div>
+            <div class="search-box">
+              <label for="searchInput">Tìm mã phụ tùng</label>
+              <input id="searchInput" type="search" placeholder="VD: LOC-001, BRK-220..." />
+            </div>
+          </header>
+
+          <section class="stats-grid" aria-label="Chỉ số tổng quan">
+            <article class="stat-card">
+              <span>Tổng mã hàng</span>
+              <strong id="totalParts">0</strong>
+            </article>
+            <article class="stat-card">
+              <span>Tổng tồn kho</span>
+              <strong id="totalStock">0</strong>
+            </article>
+            <article class="stat-card warning">
+              <span>Sắp hết hàng</span>
+              <strong id="lowStock">0</strong>
+            </article>
+            <article class="stat-card accent">
+              <span>Giá trị kho</span>
+              <strong id="inventoryValue">0₫</strong>
+            </article>
+          </section>
+
+          <section id="inventorySection" class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Inventory</p>
+                <h3>Danh sách tồn kho</h3>
+              </div>
+              <button id="resetDemo" class="ghost-button compact" type="button">Khôi phục dữ liệu mẫu</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Mã phụ tùng</th>
+                    <th>Tên phụ tùng</th>
+                    <th>Danh mục</th>
+                    <th>Vị trí</th>
+                    <th>Tồn</th>
+                    <th>Giá nhập</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody id="inventoryTable"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="transactionSection" class="panel two-column">
+            <div>
+              <p class="eyebrow">Import / Export</p>
+              <h3>Phiếu nhập xuất kho</h3>
+              <form id="transactionForm" class="form-grid transaction-form">
+                <label>
+                  Loại giao dịch
+                  <select id="transactionType" required>
+                    <option value="import">Nhập kho</option>
+                    <option value="export">Xuất kho</option>
+                  </select>
+                </label>
+                <label>
+                  Mã phụ tùng
+                  <input id="partNumber" list="partNumbers" placeholder="LOC-001" required />
+                  <datalist id="partNumbers"></datalist>
+                </label>
+                <label>
+                  Tên phụ tùng
+                  <input id="partName" placeholder="Lọc dầu động cơ" required />
+                </label>
+                <label>
+                  Danh mục
+                  <input id="category" placeholder="Lọc / Phanh / Điện..." required />
+                </label>
+                <label>
+                  Vị trí kệ
+                  <input id="location" placeholder="A1-03" required />
+                </label>
+                <label>
+                  Số lượng
+                  <input id="quantity" type="number" min="1" value="1" required />
+                </label>
+                <label>
+                  Giá nhập (VNĐ)
+                  <input id="unitPrice" type="number" min="0" step="1000" value="0" required />
+                </label>
+                <label>
+                  Tồn tối thiểu
+                  <input id="minStock" type="number" min="0" value="5" required />
+                </label>
+                <button class="primary-button wide" type="submit">Lưu phiếu</button>
+              </form>
+              <p id="transactionMessage" class="success-message" role="status"></p>
+            </div>
+            <div class="history-card">
+              <h4>Lịch sử gần đây</h4>
+              <ul id="historyList" class="history-list"></ul>
+            </div>
+          </section>
+
+          <section id="reportSection" class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Stock report</p>
+                <h3>Báo cáo tồn kho</h3>
+              </div>
+              <button id="downloadReport" class="primary-button compact" type="button">Tải CSV</button>
+            </div>
+            <div id="reportCards" class="report-grid"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
