@@ -310,6 +310,63 @@
       box-shadow: 0 12px 24px rgba(37, 99, 235, 0.20);
     }
 
+    .add-stock-button {
+      background: linear-gradient(135deg, var(--green), #047857);
+      box-shadow: 0 12px 24px rgba(5, 150, 105, 0.20);
+    }
+
+    .export-stock-button {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      box-shadow: 0 12px 24px rgba(220, 38, 38, 0.22);
+    }
+
+    .current-quantity-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px;
+      border: 1px solid rgba(37, 99, 235, 0.18);
+      border-radius: 16px;
+      background: linear-gradient(135deg, #eff6ff, #fff);
+    }
+
+    .current-quantity-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .current-quantity-card strong {
+      display: block;
+      color: var(--blue);
+      font-size: 1.85rem;
+      line-height: 1;
+    }
+
+    .form-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .row-actions {
+      display: flex;
+      min-width: 190px;
+      gap: 8px;
+    }
+
+    .row-actions button {
+      min-height: 38px;
+      padding: 0 10px;
+      border-radius: 12px;
+      font-size: 0.82rem;
+      box-shadow: none;
+    }
+
     .dashboard-cards {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -513,7 +570,7 @@
     @media (max-width: 560px) {
       .content { padding: 12px; gap: 14px; }
       .topbar, .panel, .metric-card { padding: 16px; border-radius: 18px; }
-      .dashboard-cards, .form-row, .menu { grid-template-columns: 1fr; }
+      .dashboard-cards, .form-row, .form-actions, .menu { grid-template-columns: 1fr; }
       .panel-header { align-items: stretch; flex-direction: column; }
       .secondary-button { width: 100%; }
       h1 { font-size: 2rem; }
@@ -599,8 +656,8 @@
         </div>
         <div class="user-actions">
           <div class="search-box">
-            <label for="searchInput">Tìm mã phụ tùng / tên hàng</label>
-            <input id="searchInput" type="search" placeholder="Ví dụ: LOC-001, bugi, phanh...">
+            <label for="searchInput">Tìm mã phụ tùng</label>
+            <input id="searchInput" type="search" placeholder="Nhập mã phụ tùng: LOC-001, BRK-220...">
           </div>
           <button id="logoutButton" class="logout-button" type="button">Đăng xuất</button>
         </div>
@@ -659,9 +716,10 @@
                   <th>Tên phụ tùng</th>
                   <th>Danh mục</th>
                   <th>Vị trí</th>
-                  <th>Tồn kho</th>
+                  <th>Số lượng hiện tại</th>
                   <th>Đơn giá</th>
                   <th>Trạng thái</th>
+                  <th>Thao tác</th>
                 </tr>
               </thead>
               <tbody id="inventoryBody"></tbody>
@@ -675,16 +733,16 @@
           <p class="muted">Chọn mã có sẵn để tự điền thông tin hoặc nhập mã mới.</p>
           <form id="stockForm" class="form-grid">
             <div>
-              <label for="type">Loại giao dịch</label>
-              <select id="type">
-                <option value="import">Nhập kho</option>
-                <option value="export">Xuất kho</option>
-              </select>
-            </div>
-            <div>
               <label for="code">Mã phụ tùng</label>
               <input id="code" list="partCodes" placeholder="LOC-001" required>
               <datalist id="partCodes"></datalist>
+            </div>
+            <div class="current-quantity-card" aria-live="polite">
+              <div>
+                <span>Số lượng hiện tại</span>
+                <strong id="currentQuantity">0</strong>
+              </div>
+              <p id="currentPartName" class="muted">Chọn hoặc nhập mã phụ tùng để xem tồn kho.</p>
             </div>
             <div>
               <label for="name">Tên phụ tùng</label>
@@ -714,7 +772,10 @@
               <label for="price">Đơn giá nhập</label>
               <input id="price" type="number" min="0" step="1000" value="0" required>
             </div>
-            <button type="submit">Cập nhật tồn kho</button>
+            <div class="form-actions">
+              <button class="add-stock-button" type="submit" data-stock-action="import">+ Nhập thêm kho</button>
+              <button class="export-stock-button" type="submit" data-stock-action="export">- Xuất kho</button>
+            </div>
           </form>
           <p id="message" class="message"></p>
 
@@ -762,8 +823,9 @@
       lowStockCount: document.querySelector("#lowStockCount"),
       stockValue: document.querySelector("#stockValue"),
       form: document.querySelector("#stockForm"),
-      type: document.querySelector("#type"),
       code: document.querySelector("#code"),
+      currentQuantity: document.querySelector("#currentQuantity"),
+      currentPartName: document.querySelector("#currentPartName"),
       name: document.querySelector("#name"),
       category: document.querySelector("#category"),
       location: document.querySelector("#location"),
@@ -855,12 +917,18 @@
             <td><strong>${number.format(item.quantity)}</strong></td>
             <td>${money.format(item.price)}</td>
             <td><span class="status ${status.className}">${status.text}</span></td>
+            <td>
+              <div class="row-actions">
+                <button class="add-stock-button" type="button" data-quick-action="import" data-code="${escapeHtml(item.code)}">Nhập</button>
+                <button class="export-stock-button" type="button" data-quick-action="export" data-code="${escapeHtml(item.code)}">Xuất</button>
+              </div>
+            </td>
           </tr>
         `;
       }).join("");
 
       if (!rows.length) {
-        elements.inventoryBody.innerHTML = '<tr><td colspan="7">Không tìm thấy phụ tùng phù hợp.</td></tr>';
+        elements.inventoryBody.innerHTML = '<tr><td colspan="8">Không tìm thấy phụ tùng phù hợp.</td></tr>';
       }
 
       elements.partCodes.innerHTML = inventory.map((item) => `<option value="${escapeHtml(item.code)}">${escapeHtml(item.name)}</option>`).join("");
@@ -891,6 +959,21 @@
       renderTable();
       renderStats();
       renderHistory();
+      updateCurrentQuantity();
+    }
+
+    function updateCurrentQuantity() {
+      const code = elements.code.value.trim().toUpperCase();
+      const item = inventory.find((part) => part.code === code);
+
+      if (!item) {
+        elements.currentQuantity.textContent = "0";
+        elements.currentPartName.textContent = code ? "Mã mới hoặc chưa có trong kho." : "Chọn hoặc nhập mã phụ tùng để xem tồn kho.";
+        return;
+      }
+
+      elements.currentQuantity.textContent = number.format(item.quantity);
+      elements.currentPartName.textContent = `${item.name} • ${item.location}`;
     }
 
     function fillFormFromCode() {
@@ -902,6 +985,7 @@
       elements.location.value = item.location;
       elements.price.value = item.price;
       elements.minimum.value = item.minimum;
+      updateCurrentQuantity();
     }
 
     function resetToSampleData() {
@@ -915,7 +999,7 @@
 
     elements.form.addEventListener("submit", (event) => {
       event.preventDefault();
-      const type = elements.type.value;
+      const type = event.submitter?.dataset.stockAction || "import";
       const code = elements.code.value.trim().toUpperCase();
       const name = elements.name.value.trim();
       const category = elements.category.value.trim();
@@ -946,10 +1030,8 @@
       history.unshift({ type, code, name, quantity, time: new Date().toLocaleString("vi-VN") });
       saveInventory();
       render();
-      elements.form.reset();
       elements.quantity.value = 1;
-      elements.price.value = 0;
-      elements.minimum.value = 5;
+      updateCurrentQuantity();
       elements.message.style.color = "var(--green)";
       elements.message.textContent = type === "import" ? "Đã nhập kho thành công." : "Đã xuất kho thành công.";
     });
@@ -957,6 +1039,19 @@
     elements.loginForm.addEventListener("submit", handleLogin);
     elements.logoutButton.addEventListener("click", logout);
     elements.searchInput.addEventListener("input", renderTable);
+    elements.inventoryBody.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-quick-action]");
+      if (!button) return;
+      elements.code.value = button.dataset.code;
+      fillFormFromCode();
+      elements.quantity.focus();
+      elements.message.style.color = "var(--blue)";
+      elements.message.textContent = button.dataset.quickAction === "import"
+        ? "Đã chọn mã để nhập thêm kho. Nhập số lượng rồi bấm nút Nhập thêm kho."
+        : "Đã chọn mã để xuất kho. Nhập số lượng rồi bấm nút Xuất kho.";
+      document.querySelector("#transactions").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    elements.code.addEventListener("input", updateCurrentQuantity);
     elements.code.addEventListener("change", fillFormFromCode);
     elements.resetButtons.forEach((button) => button.addEventListener("click", resetToSampleData));
 
