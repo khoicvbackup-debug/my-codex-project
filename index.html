@@ -41,6 +41,88 @@
 
     button, input, select { font: inherit; }
 
+    .is-hidden { display: none !important; }
+
+    .login-screen {
+      display: grid;
+      min-height: 100vh;
+      place-items: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 18% 16%, rgba(220, 38, 38, 0.22), transparent 24rem),
+        radial-gradient(circle at 82% 18%, rgba(37, 99, 235, 0.18), transparent 26rem),
+        linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    }
+
+    .login-card {
+      display: grid;
+      width: min(980px, 100%);
+      grid-template-columns: 1fr 420px;
+      overflow: hidden;
+      border: 1px solid rgba(219, 228, 240, 0.95);
+      border-radius: 30px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 28px 70px rgba(15, 23, 42, 0.16);
+      backdrop-filter: blur(18px);
+    }
+
+    .login-hero {
+      display: flex;
+      min-height: 520px;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 38px;
+      color: #fff;
+      background:
+        linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(69, 10, 10, 0.92)),
+        linear-gradient(135deg, var(--primary), var(--blue));
+    }
+
+    .login-hero h1 { color: #fff; }
+    .login-hero .muted { color: #cbd5e1; }
+
+    .login-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .login-badges span {
+      padding: 9px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #e2e8f0;
+      font-size: 0.86rem;
+      font-weight: 800;
+    }
+
+    .login-form-wrap {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 38px;
+    }
+
+    .login-form { display: grid; gap: 16px; }
+
+    .login-helper {
+      margin: 16px 0 0;
+      padding: 12px;
+      border-radius: 16px;
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .login-error {
+      min-height: 22px;
+      margin: 0;
+      color: var(--primary);
+      font-weight: 900;
+    }
+
     .app {
       display: grid;
       min-height: 100vh;
@@ -161,6 +243,23 @@
 
     .search-box {
       width: min(430px, 100%);
+    }
+
+    .user-actions {
+      display: flex;
+      align-items: end;
+      gap: 12px;
+      width: min(590px, 100%);
+    }
+
+    .user-actions .search-box { flex: 1; }
+
+    .logout-button {
+      width: auto;
+      min-width: 120px;
+      padding: 0 16px;
+      background: linear-gradient(135deg, #334155, #0f172a);
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.18);
     }
 
     label {
@@ -404,7 +503,11 @@
       .sidebar-card { display: none; }
       .content { padding: 18px; }
       .topbar { align-items: stretch; flex-direction: column; }
-      .search-box { width: 100%; }
+      .search-box, .user-actions { width: 100%; }
+      .user-actions { align-items: stretch; flex-direction: column; }
+      .logout-button { width: 100%; }
+      .login-card { grid-template-columns: 1fr; }
+      .login-hero { min-height: auto; gap: 28px; }
     }
 
     @media (max-width: 560px) {
@@ -414,11 +517,58 @@
       .panel-header { align-items: stretch; flex-direction: column; }
       .secondary-button { width: 100%; }
       h1 { font-size: 2rem; }
+      .login-screen { padding: 12px; }
+      .login-hero, .login-form-wrap { padding: 24px; }
+      .login-card { border-radius: 22px; }
     }
   </style>
 </head>
 <body>
-  <div class="app">
+  <section id="loginScreen" class="login-screen" aria-label="Đăng nhập hệ thống kho">
+    <div class="login-card">
+      <div class="login-hero">
+        <div class="brand">
+          <div class="brand-logo">VN</div>
+          <div>
+            <strong>Kho Phụ Tùng</strong>
+            <span>Inventory Manager</span>
+          </div>
+        </div>
+        <div>
+          <p class="eyebrow">Đăng nhập quản trị</p>
+          <h1>Quản lý tồn kho phụ tùng an toàn hơn</h1>
+          <p class="muted">Vui lòng nhập tài khoản và mật khẩu để truy cập dashboard, bảng tồn kho và chức năng nhập xuất.</p>
+          <div class="login-badges" aria-label="Tính năng nổi bật">
+            <span>Dashboard realtime</span>
+            <span>Tìm mã phụ tùng</span>
+            <span>Nhập / xuất kho</span>
+          </div>
+        </div>
+        <p class="muted">Dữ liệu demo được lưu trên trình duyệt bằng localStorage.</p>
+      </div>
+
+      <div class="login-form-wrap">
+        <p class="eyebrow">Warehouse login</p>
+        <h2>Đăng nhập</h2>
+        <p class="muted">Sử dụng tài khoản mẫu bên dưới để vào hệ thống.</p>
+        <form id="loginForm" class="login-form">
+          <div>
+            <label for="username">Tên đăng nhập</label>
+            <input id="username" name="username" type="text" autocomplete="username" placeholder="admin" required>
+          </div>
+          <div>
+            <label for="password">Mật khẩu</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••" required>
+          </div>
+          <p id="loginError" class="login-error" role="alert"></p>
+          <button type="submit">Đăng nhập</button>
+        </form>
+        <p class="login-helper"><strong>Tài khoản demo:</strong> admin / kho123</p>
+      </div>
+    </div>
+  </section>
+
+  <div id="app" class="app is-hidden">
     <aside class="sidebar" aria-label="Menu chính">
       <div>
         <div class="brand">
@@ -447,9 +597,12 @@
           <h1>Quản lý tồn kho phụ tùng ô tô</h1>
           <p class="muted">Giao diện tiếng Việt hiện đại với menu bên, thẻ thống kê, bảng tồn kho và form nhập xuất.</p>
         </div>
-        <div class="search-box">
-          <label for="searchInput">Tìm mã phụ tùng / tên hàng</label>
-          <input id="searchInput" type="search" placeholder="Ví dụ: LOC-001, bugi, phanh...">
+        <div class="user-actions">
+          <div class="search-box">
+            <label for="searchInput">Tìm mã phụ tùng / tên hàng</label>
+            <input id="searchInput" type="search" placeholder="Ví dụ: LOC-001, bugi, phanh...">
+          </div>
+          <button id="logoutButton" class="logout-button" type="button">Đăng xuất</button>
         </div>
       </header>
 
@@ -576,6 +729,9 @@
 
   <script>
     const STORAGE_KEY = "modern-vietnamese-inventory";
+    const AUTH_KEY = "modern-vietnamese-inventory-auth";
+    const DEMO_USERNAME = "admin";
+    const DEMO_PASSWORD = "kho123";
     const money = new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" });
     const number = new Intl.NumberFormat("vi-VN");
 
@@ -591,6 +747,13 @@
     let history = [];
 
     const elements = {
+      loginScreen: document.querySelector("#loginScreen"),
+      app: document.querySelector("#app"),
+      loginForm: document.querySelector("#loginForm"),
+      username: document.querySelector("#username"),
+      password: document.querySelector("#password"),
+      loginError: document.querySelector("#loginError"),
+      logoutButton: document.querySelector("#logoutButton"),
       searchInput: document.querySelector("#searchInput"),
       inventoryBody: document.querySelector("#inventoryBody"),
       partCodes: document.querySelector("#partCodes"),
@@ -619,6 +782,40 @@
 
     function saveInventory() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(inventory));
+    }
+
+    function showApp() {
+      elements.loginScreen.classList.add("is-hidden");
+      elements.app.classList.remove("is-hidden");
+      render();
+    }
+
+    function showLogin() {
+      elements.app.classList.add("is-hidden");
+      elements.loginScreen.classList.remove("is-hidden");
+      elements.password.value = "";
+      elements.loginError.textContent = "";
+      elements.username.focus();
+    }
+
+    function handleLogin(event) {
+      event.preventDefault();
+      const username = elements.username.value.trim();
+      const password = elements.password.value;
+
+      if (username === DEMO_USERNAME && password === DEMO_PASSWORD) {
+        sessionStorage.setItem(AUTH_KEY, "true");
+        showApp();
+        return;
+      }
+
+      elements.loginError.textContent = "Tên đăng nhập hoặc mật khẩu không đúng.";
+      elements.password.select();
+    }
+
+    function logout() {
+      sessionStorage.removeItem(AUTH_KEY);
+      showLogin();
     }
 
     function escapeHtml(value) {
@@ -757,11 +954,17 @@
       elements.message.textContent = type === "import" ? "Đã nhập kho thành công." : "Đã xuất kho thành công.";
     });
 
+    elements.loginForm.addEventListener("submit", handleLogin);
+    elements.logoutButton.addEventListener("click", logout);
     elements.searchInput.addEventListener("input", renderTable);
     elements.code.addEventListener("change", fillFormFromCode);
     elements.resetButtons.forEach((button) => button.addEventListener("click", resetToSampleData));
 
-    render();
+    if (sessionStorage.getItem(AUTH_KEY) === "true") {
+      showApp();
+    } else {
+      showLogin();
+    }
   </script>
 </body>
 </html>
